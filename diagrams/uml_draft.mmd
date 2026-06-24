@@ -1,0 +1,36 @@
+classDiagram
+    %% PawPal — pet task tracker class diagram
+
+    class Owner {
+        +String name
+        +addPet(Pet pet) void
+    }
+
+    class Pet {
+        +String name
+        +String type
+        +int age
+        +String careNeeds
+    }
+
+    class Task {
+        +String title
+        +PriorityLevel level
+        +DateTime scheduledTime
+        +int duration
+        +boolean completed
+        +createTask(String title) Task
+        +removeTask(Task task) void
+        +notifyTask() void
+    }
+
+    class PriorityLevel {
+        <<enumeration>>
+        EASY
+        MEDIUM
+        HARD
+    }
+
+    Owner "1" --> "*" Pet : owns
+    Pet "1" --> "*" Task : has
+    Task --> PriorityLevel : level

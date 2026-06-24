@@ -2,6 +2,15 @@
 
 ## 1. System Design
 
+
+The main goal of PawPal+ is to support pet owners in organizing and completing daily care tasks. The three core actions a user should be able to perform are:
+
+1. Add/manage a pet profile — The user can add information about their pet, such as name, type, age, and care needs.
+
+2. Create and receive reminders for care tasks — The user can schedule tasks like feeding, walks, medication, or grooming and receive notifications when they need to be done.
+
+3. View and complete daily tasks — The user can view their planned schedule and mark tasks as completed after completing them.
+
 **a. Initial design**
 
 - Briefly describe your initial UML design.
