@@ -42,10 +42,14 @@ What classes did you include, and what responsibilities did you assign to each?
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
 
+    My scheduler organizes tasks according to their scheduled time and priority level. Tasks are shown first if they occur earlier in the day. Higher-priority tasks are listed before lower-priority ones. It also excludes completed tasks from the upcoming schedule and tasks are able to be filtered by pet name or completion status. I selected these constraints since completing pet care tasks on time is the most important goal. On the other hand, priority helps determine which task should be completed first when there is a scheduling conflict.
+
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+
+    One tradeoff my scheduler provides is using a simple conflict detection algorithm that makes a comparasion between tasks to identify overlapping time ranges. While more advanced algorithms could enhance performance for very large schedules, they would also make the code challenging to understand and maintain. Because this application is designed to manage a relatively small amount of pet care tasks, the more practical approach is an appropriate balance between readability and functionality.
 
 ---
 

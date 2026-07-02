@@ -77,10 +77,10 @@ Sample test output:
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `sort_by_time()`, `upcoming_tasks()` | Sorts tasks by scheduled time, then by priority for tasks with the same time. |
+| Filtering | `filter_tasks()` | Filters tasks by completion status and/or pet name. |
+| Conflict handling | `conflicts()`, `conflict_warning()` | Detects overlapping task times and returns a warning instead of crashing. |
+| Recurring tasks | `next_occurrence()`, `complete_task()` | Automatically creates the next daily or weekly task when a recurring task is completed. |
 
 ## 📸 Demo Walkthrough
 
