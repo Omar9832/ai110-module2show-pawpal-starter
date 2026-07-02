@@ -57,19 +57,39 @@ Today's Schedule for Sam
 
 ## 🧪 Testing PawPal+
 
+Run the automated test suite with:
+
 ```bash
-# Run the full test suite:
-pytest
-
-# Run with coverage:
-pytest --cov
+python -m pytest
 ```
 
-Sample test output:
+The tests verify the core functionality of PawPal+, including:
 
+- Task completion
+- Adding tasks to pets
+- Sorting tasks by scheduled time
+- Recurring task scheduling
+- Conflict detection and warning messages
+
+### Sample Test Output
+
+```text
+python -m pytest
+========================================================= test session starts =========================================================
+platform win32 -- Python 3.9.13, pytest-8.4.2, pluggy-1.6.0
+rootdir: C:\Users\omarb\Downloads\ai110-module2show-pawpal-starter
+collected 5 items
+
+tests\test_pawpal.py .....                                                                                                       [100%]
+
+========================================================== 5 passed in 0.02s ==========================================================
 ```
-# Paste your pytest output here
-```
+
+### Confidence Level
+
+⭐⭐⭐⭐⭐ (5/5)
+
+All automated tests pass successfull. This covers the scheduler's core features consisting of task management, sorting, recurring tasks, and conflict detection. While additional edge-case testing could always be added, the current test suite offers a strong confidence that the main functionality behaves correctly.
 
 ## 📐 Smarter Scheduling
 
