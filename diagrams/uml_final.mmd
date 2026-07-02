@@ -1,0 +1,69 @@
+classDiagram
+    %% PawPal — pet task tracker class diagram
+
+    class Owner {
+        +String name
+        +List~Pet~ pets
+        +add_pet(Pet pet) void
+        +all_tasks() List~Task~
+    }
+
+    class Pet {
+        +String name
+        +String type
+        +int age
+        +String care_needs
+        +List~Task~ tasks
+        +add_task(Task task) void
+        +remove_task(Task task) void
+    }
+
+    class Task {
+        +String title
+        +PriorityLevel priority
+        +DateTime scheduled_time
+        +int duration
+        +boolean completed
+        +Recurrence recurrence
+        +UUID id
+        +mark_complete() void
+        +next_occurrence() Task
+        +notify_task() void
+    }
+
+    class Scheduler {
+        +Owner owner
+        +pets() List~Pet~
+        +all_tasks() List~Task~
+        +pending_tasks() List~Task~
+        +complete_task(Task task) Task
+        +sort_by_time() List~Task~
+        +filter_tasks(bool completed, String pet_name) List~Task~
+        +upcoming_tasks() List~Task~
+        +upcoming_with_pets() List~PetTaskPair~
+        +conflicts() List~TaskPair~
+        +conflict_warning() String
+        +same_time_tasks() List~TaskList~
+        +run_due_notifications(DateTime now) void
+    }
+
+    class PriorityLevel {
+        <<enumeration>>
+        LOW
+        MEDIUM
+        HIGH
+        URGENT
+    }
+
+    class Recurrence {
+        <<enumeration>>
+        NONE
+        DAILY
+        WEEKLY
+    }
+
+    Owner "1" --> "*" Pet : owns
+    Pet "1" --> "*" Task : has
+    Scheduler "1" --> "1" Owner : manages
+    Task --> PriorityLevel : priority
+    Task --> Recurrence : recurrence

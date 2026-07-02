@@ -116,54 +116,107 @@ else:
 
 st.divider()
 
-st.subheader("Today's Schedule")
-st.caption(
-    "Built by the Scheduler — pending tasks ordered by time, then priority. "
-    "Check off tasks as you finish them."
-)
-
 scheduler = Scheduler(owner)
+
+
+def repeat_label(task: Task) -> str:
+    """Human-friendly recurrence label for a table cell."""
+    return "—" if task.recurrence is Recurrence.NONE else task.recurrence.value.title()
+
+
+st.subheader("Today's Schedule")
+st.caption("Built by the Scheduler — pending tasks ordered by time, then priority.")
+
+# Let the Scheduler decide whether anything clashes and how to phrase it.
+warning = scheduler.conflict_warning()
+if warning:
+    st.warning(f"⚠️ {warning}")
+
 upcoming = scheduler.upcoming_with_pets()
 
 if not upcoming:
     st.info("Nothing pending. Add some tasks above.")
 else:
-    pet_by_id = {task.id: pet for pet, task in upcoming}
+    st.success(f"{len(upcoming)} task(s) planned for {owner.name}.")
 
-    # Flag double-booked time windows so the owner can resolve them.
-    conflicts = scheduler.conflicts()
-    if conflicts:
-        st.warning("⚠️ Some tasks overlap in time:")
-        for earlier, later in conflicts:
-            ep, lp = pet_by_id[earlier.id], pet_by_id[later.id]
-            st.write(
-                f"- **{ep.name}: {earlier.title}** "
-                f"({earlier.scheduled_time.strftime('%H:%M')}, {earlier.duration} min) "
-                f"overlaps **{lp.name}: {later.title}** "
-                f"({later.scheduled_time.strftime('%H:%M')})"
+    # Read-only, professional-looking schedule via st.table (ordered by the
+    # Scheduler's upcoming_tasks() logic: time first, then priority).
+    st.table(
+        [
+            {
+                "Time": task.scheduled_time.strftime("%H:%M"),
+                "Priority": task.priority.value.title(),
+                "Pet": pet.name,
+                "Task": task.title,
+                "Min": task.duration,
+                "Repeat": repeat_label(task),
+            }
+            for pet, task in upcoming
+        ]
+    )
+
+    # Completion controls live below the table, since st.table is read-only.
+    st.markdown("**Mark a task done**")
+    task_by_label = {
+        f"{task.scheduled_time.strftime('%H:%M')} · {pet.name}: {task.title}": task
+        for pet, task in upcoming
+    }
+    done_col, btn_col = st.columns([4, 1])
+    with done_col:
+        choice = st.selectbox("Completed task", list(task_by_label.keys()))
+    with btn_col:
+        st.write("")  # spacer to align the button with the selectbox
+        mark_done = st.button("Done ✓")
+
+    # complete_task drops this task from pending_tasks and, if it recurs, adds
+    # its next occurrence — so the rerun rebuilds the schedule with the
+    # completed task gone and any repeat already queued.
+    if mark_done:
+        follow_up = scheduler.complete_task(task_by_label[choice])
+        if follow_up is not None:
+            st.toast(
+                f"Rescheduled '{follow_up.title}' for "
+                f"{follow_up.scheduled_time.strftime('%a %H:%M')}."
             )
+        st.rerun()
 
-    widths = [2, 2, 3, 4, 2, 2, 2]
-    header = st.columns(widths)
-    for col, label in zip(header, ["Time", "Priority", "Pet", "Task", "Min", "Repeat", "Done"]):
-        col.markdown(f"**{label}**")
+st.divider()
 
-    for pet, task in upcoming:
-        row = st.columns(widths)
-        row[0].write(task.scheduled_time.strftime("%H:%M"))
-        row[1].write(task.priority.value)
-        row[2].write(pet.name)
-        row[3].write(task.title)
-        row[4].write(str(task.duration))
-        row[5].write("—" if task.recurrence is Recurrence.NONE else task.recurrence.value)
-        # complete_task drops this task from pending_tasks and, if it recurs,
-        # adds its next occurrence — so the rerun rebuilds the schedule with
-        # the completed task gone and any repeat already queued.
-        if row[6].button("Done", key=f"done_{task.id}"):
-            follow_up = scheduler.complete_task(task)
-            if follow_up is not None:
-                st.toast(
-                    f"Rescheduled '{follow_up.title}' for "
-                    f"{follow_up.scheduled_time.strftime('%a %H:%M')}."
-                )
-            st.rerun()
+st.subheader("Browse & Filter Tasks")
+st.caption("Every task across all pets, narrowed with the Scheduler's filter_tasks().")
+
+if not owner.pets:
+    st.info("Add a pet and some tasks to browse them here.")
+else:
+    fcol1, fcol2 = st.columns(2)
+    with fcol1:
+        pet_filter = st.selectbox("Pet", ["All pets"] + [pet.name for pet in owner.pets])
+    with fcol2:
+        status_filter = st.selectbox("Status", ["All", "Pending", "Completed"])
+
+    # Translate the UI choices into filter_tasks() keyword arguments.
+    completed_arg = {"All": None, "Pending": False, "Completed": True}[status_filter]
+    pet_arg = None if pet_filter == "All pets" else pet_filter
+
+    # Pair each filtered task with its pet, then order chronologically for display.
+    pet_by_id = {task.id: pet for pet in owner.pets for task in pet.tasks}
+    filtered = scheduler.filter_tasks(completed=completed_arg, pet_name=pet_arg)
+    filtered.sort(key=lambda task: task.scheduled_time)
+
+    if not filtered:
+        st.info("No tasks match these filters.")
+    else:
+        st.table(
+            [
+                {
+                    "Time": task.scheduled_time.strftime("%H:%M"),
+                    "Priority": task.priority.value.title(),
+                    "Pet": pet_by_id[task.id].name,
+                    "Task": task.title,
+                    "Min": task.duration,
+                    "Repeat": repeat_label(task),
+                    "Status": "✅ Done" if task.completed else "⏳ Pending",
+                }
+                for task in filtered
+            ]
+        )

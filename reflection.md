@@ -60,10 +60,18 @@ What classes did you include, and what responsibilities did you assign to each?
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
 - What kinds of prompts or questions were most helpful?
 
+    I used AI at a few points rather than all at once. At the start I mostly used it to brainstorm, because I wanted to know what edge cases a scheduler with sorting and recurring tasks should handle, and that's where the idea of two tasks starting at the same time came from. Once the classes were working I leaned on it more for the tedious parts, like drafting test functions for sorting, recurrence, and conflicts, and rewriting the Streamlit display so it used my Scheduler methods and showed things in tables instead of plain text. I also had it help me update the UML diagram after my design changed, mostly because I kept forgetting to keep it in sync.
+
+    The prompts that worked best were the specific ones. If I pointed it at the actual file and asked something concrete, I usually got back something I could use and check. When I was vague, the answers were vague too. Telling it what I already had and what I wanted next was really what made the difference.
+
 **b. Judgment and verification**
 
 - Describe one moment where you did not accept an AI suggestion as-is.
 - How did you evaluate or verify what the AI suggested?
+
+    The clearest example was a test the AI wrote for conflict detection. It compared the two clashing tasks by putting them into a set, which looked reasonable enough that I almost left it alone. When I ran pytest it failed, because my Task is a mutable dataclass and Python won't let you put those in a set. I changed it to just check that both tasks were in the returned pair, and then it passed. That one stuck with me because the code looked right and still didn't work.
+
+    After that I made a point of running things instead of assuming they were fine. I ran the test suite whenever I added tests, ran main.py to check the CLI output actually matched what the README claimed, and went through the UML class by class against my code. When the AI told me my old diagram was out of date, I didn't just take its word for it, I went and checked each class myself first.
 
 ---
 
@@ -74,10 +82,18 @@ What classes did you include, and what responsibilities did you assign to each?
 - What behaviors did you test?
 - Why were these tests important?
 
+    I focused my tests on the core behaviors. I checked that marking a task complete changes its status, that adding a task to a pet increases the task count, that sorting returns tasks in time order, that completing a daily task creates a copy for the next day, and that two tasks at the same time get flagged as a conflict.
+
+    I picked these because they're basically the things the app promises to do. If the sorting is off, the whole daily plan is useless. If recurrence doesn't carry a task forward, a repeating task just quietly disappears. And if conflicts aren't caught, the owner ends up double-booked with no warning. The completion and add-task tests are more basic, but everything else is built on top of them, so I wanted those covered too.
+
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
 - What edge cases would you test next if you had more time?
+
+    I'm reasonably confident. All five tests pass and they hit the features I care about most, so I trust it in the normal cases. What I'm less sure about is the edge behavior my tests don't reach yet.
+
+    If I had more time, the first thing I'd add is the case where one task ends exactly when the next one starts, like 8:00 to 8:30 and then something at 8:30, since that shouldn't count as a conflict and I'd want to be sure it doesn't. I'd also test weekly recurrence the same way I did daily, try three tasks overlapping at once, check that the priority tie-break works when two tasks share a time, and run through the different filter combinations. Testing an empty schedule with no pets or tasks would be worth doing as well, just so I know nothing breaks on the empty case.
 
 ---
 
@@ -87,10 +103,16 @@ What classes did you include, and what responsibilities did you assign to each?
 
 - What part of this project are you most satisfied with?
 
+    I'm most proud of how much cleaner the design got as I actually built it. Moving add_pet() onto the Owner and add_task()/remove_task() onto the Pet made each class own the right thing, and it stopped feeling awkward. Adding the id field to Task fixed a genuine bug too, where two tasks that looked identical could get mixed up when I tried to remove one. And I like that the Scheduler stayed separate from the data classes. It just reads the pets from the Owner and does all the sorting and conflict work in one place, which made the whole thing a lot easier to follow.
+
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
 
+    The main thing is that nothing gets saved. Everything lives in memory right now, so the moment the app restarts, all the pets and tasks are gone. Adding real storage so it persists between sessions would make it feel like an actual product. I'd also want users to be able to edit or delete tasks from the UI instead of only adding and completing them, and I'd make the schedule handle more than one day instead of assuming everything is today. Turning the printed reminders into real notifications would be a nice follow-up as well.
+
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+
+    What stuck with me most is that figuring out which class is responsible for what matters more than the code you end up writing. Once the responsibilities were right, with the owner handling pets and the pet handling its own tasks, the actual implementation kind of fell into place. With AI, the lesson was that it's fast and useful for drafts and refactors, but I can't take the output at face value. Running the tests and the app myself was what actually told me whether something worked, and once or twice that was the only reason I noticed a problem at all.
